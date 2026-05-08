@@ -1,0 +1,8 @@
+# Build artifacts
+*.o
+*.exe
+cv
+
+# IDE / System files
+.vscode/
+.DS_Store

@@ -1,0 +1,6 @@
+let a = input 
+print a 
+let b = input 
+print b
+let c = a/b
+print c
