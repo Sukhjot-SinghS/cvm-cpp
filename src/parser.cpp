@@ -83,17 +83,24 @@ std::unique_ptr<Stmt> Parser::varDeclaration() {
 std::unique_ptr<Stmt> Parser::statement() {
     if (match({TokenType::IF})) {
         std::unique_ptr<Expr> condition = expression();
-        std::unique_ptr<Stmt> thenBranch = statement();
+        
+        // FIX: Call declaration() instead of statement() so single-line 'let' works
+        std::unique_ptr<Stmt> thenBranch = declaration(); 
+        
         std::unique_ptr<Stmt> elseBranch = nullptr;
         if (match({TokenType::ELSE})) {
-            elseBranch = statement();
+            // FIX: Call declaration() here too
+            elseBranch = declaration(); 
         }
         return std::make_unique<IfStmt>(std::move(condition), std::move(thenBranch), std::move(elseBranch));
     }
     
     if (match({TokenType::WHILE})) {
         std::unique_ptr<Expr> condition = expression();
-        std::unique_ptr<Stmt> body = statement();
+        
+        // FIX: Call declaration() instead of statement()
+        std::unique_ptr<Stmt> body = declaration(); 
+        
         return std::make_unique<WhileStmt>(std::move(condition), std::move(body));
     }
 
@@ -107,15 +114,18 @@ std::unique_ptr<Stmt> Parser::statement() {
     }
 
     if (match({TokenType::PRINT})) return printStatement();
+    
     if (match({TokenType::RETURN})) {
         std::unique_ptr<Expr> value = nullptr;
-        if (!check(TokenType::RIGHT_BRACE)) { // If it's not just an empty return
+        if (!check(TokenType::RIGHT_BRACE) && !check(TokenType::EOF_TOKEN) && !check(TokenType::IF) && !check(TokenType::WHILE) && !check(TokenType::LET) && !check(TokenType::PRINT) && !check(TokenType::DEF)) { 
+            // Better check to see if there is an actual expression to return
             value = expression();
         }
         return std::make_unique<ReturnStmt>(std::move(value));
     }
     
-    throw std::runtime_error("Only let, print, if, while, and blocks are supported right now!");
+    // FIX: Updated to a dynamic error message instead of the hardcoded one!
+    throw std::runtime_error("\n[Syntax Error] Unexpected syntax at line " + std::to_string(peek().line) + ". Engine could not parse '" + peek().lexeme + "'.");
 }
 
 std::unique_ptr<Stmt> Parser::printStatement() {
@@ -202,6 +212,5 @@ std::unique_ptr<Expr> Parser::primary() {
         return std::make_unique<VariableExpr>(name);
     }
 
-
-    throw std::runtime_error("Expect expression at line " + std::to_string(peek().line));
+    throw std::runtime_error("\n[Syntax Error] Expecting an expression at line " + std::to_string(peek().line) + " (Found '" + peek().lexeme + "')");
 }

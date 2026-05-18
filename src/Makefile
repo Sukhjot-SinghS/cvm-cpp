@@ -6,7 +6,7 @@ CXXFLAGS = -Wall -Wextra -std=c++17
 
 # 2. Target Executable Name
 # Note: Generates 'cv' on Linux/Mac, and 'cv.exe' on Windows automatically
-TARGET = cv
+TARGET = cvm
 
 # 3. Source and Object Files
 SRCS = main.cpp lexer.cpp parser.cpp compiler.cpp vm.cpp

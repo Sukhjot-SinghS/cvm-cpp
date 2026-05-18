@@ -1,7 +1,7 @@
-
 #include "vm.h"
 #include <iostream>
 #include <stdexcept>
+#include <string>
 
 // --- Stack Operations ---
 void VM::push(int value) {
@@ -18,8 +18,11 @@ int VM::pop() {
 }
 
 int VM::getVariable(const std::string& name) {
+    // Check local scope first
     if (scopeStack.back().count(name)) return scopeStack.back()[name];
+    // Fallback to global scope
     if (scopeStack.front().count(name)) return scopeStack.front()[name];
+    
     throw std::runtime_error("\n[Runtime Error] Undefined variable: '" + name + "'");
 }
 
@@ -36,7 +39,7 @@ std::string VM::readString() {
     return chunk->strings[readByte()];
 }
 
-// --- The Core Loop ---
+// --- The Core Execution Loop ---
 void VM::interpret(Chunk* compiledChunk) {
     chunk = compiledChunk;
     ip = 0; // Reset Program Counter to start
@@ -44,7 +47,42 @@ void VM::interpret(Chunk* compiledChunk) {
     scopeStack.push_back({}); // Create the Global Scope
     callStack.clear();
 
+    std::cout << "\n=== [VM EXECUTION TRACE] ===\n";
+
     while (true) {
+        // Safety net: If we accidentally run off the end of the bytecode, stop.
+        if (static_cast<size_t>(ip) >= chunk->code.size()) break; 
+
+        // 👇 --- DEMO VIDEO TRACE LOGIC --- 👇
+        uint8_t peekInst = chunk->code[ip];
+        std::string opName;
+        switch(static_cast<Opcode>(peekInst)) {
+            case Opcode::OP_CONSTANT: opName = "OP_CONSTANT"; break;
+            case Opcode::OP_ADD: opName = "OP_ADD"; break;
+            case Opcode::OP_SUBTRACT: opName = "OP_SUBTRACT"; break;
+            case Opcode::OP_MULTIPLY: opName = "OP_MULTIPLY"; break;
+            case Opcode::OP_DIVIDE: opName = "OP_DIVIDE"; break;
+            case Opcode::OP_EQUAL: opName = "OP_EQUAL"; break;
+            case Opcode::OP_LESS: opName = "OP_LESS"; break;
+            case Opcode::OP_DEFINE_VAR: opName = "OP_DEFINE_VAR"; break;
+            case Opcode::OP_GET_VAR: opName = "OP_GET_VAR"; break;
+            case Opcode::OP_PRINT: opName = "OP_PRINT"; break;
+            case Opcode::OP_JUMP_IF_FALSE: opName = "OP_JUMP_IF_FALSE"; break;
+            case Opcode::OP_JUMP: opName = "OP_JUMP"; break;
+            case Opcode::OP_LOOP: opName = "OP_LOOP"; break;
+            case Opcode::OP_RETURN: opName = "OP_RETURN"; break;
+            case Opcode::OP_CALL: opName = "OP_CALL"; break;
+            case Opcode::OP_INPUT: opName = "OP_INPUT"; break;
+            default: opName = "UNKNOWN"; break;
+        }
+
+        std::cout << "[Trace] IP: " << ip 
+                  << " \t| Scopes: " << scopeStack.size() 
+                  << " \t| Stack: " << stack.size() 
+                  << " \t| Executing: " << opName << "\n";
+        // 👆 ---------------------------- 👆
+
+        // Actually fetch the instruction to execute
         uint8_t instruction = readByte();
 
         switch (static_cast<Opcode>(instruction)) {
@@ -102,7 +140,7 @@ void VM::interpret(Chunk* compiledChunk) {
                 break;
             }
             case Opcode::OP_PRINT: {
-                std::cout << pop() << "\n";
+                std::cout << "OUTPUT >> " << pop() << "\n"; 
                 break;
             }
             case Opcode::OP_JUMP_IF_FALSE: {
@@ -133,7 +171,6 @@ void VM::interpret(Chunk* compiledChunk) {
                 callStack.pop_back();        // Remove it from the stack
                 push(retVal);                // Put the return value back on the stack for the caller
                 break;
-                return; // Halt the machine!
             }
             case Opcode::OP_CALL: {
                 std::string name = readString();
@@ -144,7 +181,7 @@ void VM::interpret(Chunk* compiledChunk) {
                 // 2. Create a fresh, empty Local Memory space
                 scopeStack.push_back({}); 
                 
-                // 3. Teleport!
+                // 3. Teleport to the function!
                 ip = chunk->functions[name]; 
                 break;
             }
@@ -160,7 +197,6 @@ void VM::interpret(Chunk* compiledChunk) {
                 push(value); // Put the user's number onto the stack!
                 break;
             }
-        
         }
     }
 }

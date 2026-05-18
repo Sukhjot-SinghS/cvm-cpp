@@ -1,4 +1,3 @@
-
 #include "lexer.h"
 #include <cctype>
 #include <unordered_map>

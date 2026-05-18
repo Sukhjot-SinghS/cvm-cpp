@@ -1,6 +1,24 @@
-let a = input 
-print a 
-let b = input 
-print b
-let c = a/b
-print c
+def calculate(op, a, b) {
+    if op == 1 
+        return a + b
+    if op == 2 
+        return a - b
+    if op == 3 
+        return a * b
+    if op == 4 
+        return a / b
+    return 0
+}
+
+let isRunning = 1
+while isRunning == 1 {
+    let opCode = input
+    if opCode == 0 
+        let isRunning = 0
+    if 0 < opCode {
+        let num1 = input
+        let num2 = input
+        let answer = calculate(opCode, num1, num2)
+        print answer
+    }
+}
