@@ -23,8 +23,8 @@ CVM++ uses a standard `Makefile` for zero-friction compilation. You only need `g
 
 ### 1. Clone & Compile
 ```bash
-git clone https://github.com/yourusername/cvm-plus-plus.git
-cd cvm-plus-plus/src
+git clone https://github.com/Sukhjot-SinghS/cvm-cpp.git
+cd cvm-cpp/src
 make
 ```
 (This will generate the cv executable in your directory).
@@ -33,9 +33,9 @@ make
 Create a file named `test.cvm`, write your code, and execute it:
 
 ```bash
-./cv test.cvm
+./cvm test.cvm
 ```
-(Note for Windows users: The Makefile automatically generates `cv.exe`. Run `./cv.exe test.cvm`)
+(Note for Windows users: The Makefile automatically generates `cvm`. Run `./cvm test.cvm`)
 
 ---
 
